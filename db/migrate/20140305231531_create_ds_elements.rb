@@ -2,11 +2,7 @@ class CreateDsElements < ActiveRecord::Migration
   def change
     create_table :ds_elements do |t|
       t.string :fullpath
-      t.string :prop
-      t.string :datatype
-      t.text :description
-      t.datetime :lastseen
-
+      t.string :sample_value
       t.timestamps
     end
   end

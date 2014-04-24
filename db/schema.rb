@@ -15,10 +15,7 @@ ActiveRecord::Schema.define(version: 20140305231531) do
 
   create_table "ds_elements", force: true do |t|
     t.string   "fullpath"
-    t.string   "prop"
-    t.string   "datatype"
-    t.text     "description"
-    t.datetime "lastseen"
+    t.string   "sample_value"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

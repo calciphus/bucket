@@ -6,14 +6,6 @@ class MainController < ApplicationController
 		respond_to do |format|
 			# Respond with success per Datasift documentation
 			format.html {}
-			format.json{
-				output = Hash["elements" => []]
-				@elements.each do |e|
-					thise = Hash["source" => e.fullpath.split(".")[0], "field" => e.prop,  "namespace" => e.fullpath, "datatype" => e.datatype, "first_appeared" => e.created_at, "last_seen" => e.updated_at]
-					output["elements"] << thise
-				end
-				render :json => output.to_json
-			}
 		end
 	end
 
@@ -25,7 +17,7 @@ class MainController < ApplicationController
 			format.html {
 				output = []
 				@elements.each do |e|
-					output << e.fullpath.gsub(/\.$/,'')
+					output << "#{e.fullpath.gsub(/\.$/,'')} - #{e.sample_value}"
 				end
 				render :text => output.join("<br>")
 			}
@@ -38,9 +30,9 @@ class MainController < ApplicationController
 		respond_to do |format|
 			# Respond with success per Datasift documentation
 			format.csv {
-				output = ["fullpath,datatype,first_seen,last_seen"]
+				output = ["fullpath,sample_value,first_seen,last_seen"]
 				@elements.each do |e|
-					output << "#{e.fullpath.gsub(/\.$/,'')},#{e.datatype},#{e.created_at},#{e.updated_at}"
+					output << "#{e.fullpath.gsub(/\.$/,'')},#{e.sample_value},#{e.created_at},#{e.updated_at}"
 				end
 				response.headers['Content-Type'] = 'text/csv'
 			    response.headers['Content-Disposition'] = 'attachment; filename=sieve_export.csv'    
@@ -51,17 +43,19 @@ class MainController < ApplicationController
 
 	# JSON output
 	def json
-		@elements = DsElement.all.order(:fullpath)
+		@elements = DsElement.all.order(:fullpath).pluck("fullpath").uniq
 		# Respond with success per Datasift documentation
 		output = Hash["elements" => []]
 		@elements.each do |e|
-			thise = Hash["source" => e.fullpath.split(".")[0], "field" => e.prop,  "namespace" => e.fullpath, "datatype" => e.datatype, "first_appeared" => e.created_at, "last_seen" => e.updated_at]
+			allsamples = DsElement.where(:fullpath => e).order(:sample_value).pluck("sample_value")
+			thise = Hash["path" => e.fullpath.split(".")[0], "sample_values" => allsamples]
 			output["elements"] << thise
 		end
 		render :json => output.to_json
 	end
 
 	def webhook
+		lookingfor = ["interaction.source","blog.domain","board.domain","lexusnexis.source.name","newscred.source.name"]
 		#if params[:token] == ENV['SIMPLE_TOKEN']
 			if params[:interactions]
 				params[:interactions].each do |iac|
@@ -69,16 +63,10 @@ class MainController < ApplicationController
 					#puts output.to_yaml
 					output.each do |i, v|
 						puts "#{i} : #{v} (#{get_datatype(v)})"
-						if !i.include?"http"
+						if lookingfor.include?i
 							target = i
 							#target = i.gsub(".0",".").gsub("..",".")
-							elem = DsElement.find_or_create_by(fullpath: target)
-							if elem.prop == nil
-								elem.prop = target.split(".")[-1]
-							end
-							if elem.datatype == nil or elem.datatype == ""
-								elem.datatype = get_datatype(v) #rescue nil
-							end
+							elem = DsElement.find_or_create_by(fullpath: target, samplevalue: v)
 							if elem.changed?
 								elem.save
 							else

@@ -6,7 +6,7 @@
 		<tr>
 			<th>Path</th>
 			<th>Reference</th>
-			<th>Data Type</th>
+			<th>Sample Value</th>
 			<th>First Seen</th>
 			<th>Last Seen</th>
 		</tr>
@@ -16,7 +16,7 @@
 		<tr>
 			<td><%= link_to e.fullpath.gsub(/\.$/,'').gsub("."," &rarr; ").html_safe, "http://dev.datasift.com/search/site/#{e.fullpath.gsub('.0','')}", :target => "_blank" -%></td>
 			<td><%= e.fullpath  -%></td>
-			<td><%= e.datatype -%></td>
+			<td><%= e.sample_value -%></td>
 			<td><%= e.created_at -%></td>
 			<td><%= e.updated_at -%></td>
 		</tr>
