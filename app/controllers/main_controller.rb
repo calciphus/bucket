@@ -48,7 +48,7 @@ class MainController < ApplicationController
 		output = Hash["elements" => []]
 		@elements.each do |e|
 			allsamples = DsElement.where(:fullpath => e).order(:sample_value).pluck("sample_value")
-			thise = Hash["path" => e.fullpath.split(".")[0], "sample_values" => allsamples]
+			thise = Hash["path" => e.split(".")[0], "sample_values" => allsamples]
 			output["elements"] << thise
 		end
 		render :json => output.to_json
@@ -62,7 +62,7 @@ class MainController < ApplicationController
 					output = flatten_with_path(iac)
 					#puts output.to_yaml
 					output.each do |i, v|
-						puts "#{i} : #{v} (#{get_datatype(v)})"
+						#puts "#{i} : #{v} (#{get_datatype(v)})"
 						if lookingfor.include?i
 							target = i
 							#target = i.gsub(".0",".").gsub("..",".")
