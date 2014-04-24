@@ -66,7 +66,7 @@ class MainController < ApplicationController
 						if lookingfor.include?i
 							target = i
 							#target = i.gsub(".0",".").gsub("..",".")
-							elem = DsElement.find_or_create_by(fullpath: target, samplevalue: v)
+							elem = DsElement.find_or_create_by(fullpath: target, sample_value: v)
 							if elem.changed?
 								elem.save
 							else
